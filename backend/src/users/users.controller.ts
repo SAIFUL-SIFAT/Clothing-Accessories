@@ -10,4 +10,9 @@ export class UsersController {
     signup(@Body() createUserDto: CreateUserDto) {
         return this.usersService.create(createUserDto);
     }
+
+    @Post('login')
+    login(@Body() loginDto: any) {
+        return this.usersService.login(loginDto);
+    }
 }

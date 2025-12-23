@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, User, Search, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 interface NavbarProps {
   cartCount: number;
@@ -11,6 +12,7 @@ interface NavbarProps {
 }
 
 const Navbar = ({ cartCount, onCartClick, onAuthClick, onMenuClick }: NavbarProps) => {
+  const { user, logout, isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -74,15 +76,34 @@ const Navbar = ({ cartCount, onCartClick, onAuthClick, onMenuClick }: NavbarProp
               <Search size={22} />
             </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onAuthClick}
-              className={`p-2 transition-colors duration-300 ${isScrolled ? 'text-foreground hover:text-accent' : 'text-cream hover:text-gold'
-                }`}
-            >
-              <User size={22} />
-            </motion.button>
+            {/* Auth / Profile */}
+            <div className="flex items-center">
+              {isAuthenticated ? (
+                <div className="flex items-center gap-4">
+                  <span className={`text-sm hidden md:block ${isScrolled ? 'text-foreground' : 'text-cream'}`}>
+                    Hello, <span className="font-semibold text-accent">{user?.name}</span>
+                  </span>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={logout}
+                    className="text-xs uppercase tracking-widest px-4 py-2 border border-accent/30 text-accent hover:bg-accent hover:text-accent-foreground transition-all duration-300 rounded-full"
+                  >
+                    Logout
+                  </motion.button>
+                </div>
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onAuthClick}
+                  className={`p-2 transition-colors duration-300 ${isScrolled ? 'text-foreground hover:text-accent' : 'text-cream hover:text-gold'
+                    }`}
+                >
+                  <User size={22} />
+                </motion.button>
+              )}
+            </div>
 
             <motion.button
               whileHover={{ scale: 1.1 }}

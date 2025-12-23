@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, Instagram, Facebook, Phone, Mail } from 'lucide-react';
+import { X, ChevronRight, Instagram, Facebook, Phone, Mail, LogOut, User as UserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const menuItems = [
 
 const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
   const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth();
 
   const handleNavClick = (href: string) => {
     if (href.startsWith('/#')) {
@@ -67,8 +69,16 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-[#449c80]">
-              <div>
-                <h2 className="font-serif text-xl text-foreground">Menu</h2>
+              <div className="flex items-center gap-3">
+                <div className="bg-accent/20 p-2 rounded-full">
+                  <UserIcon className="text-accent" size={20} />
+                </div>
+                <div>
+                  <h2 className="font-serif text-xl text-foreground">
+                    {isAuthenticated ? user?.name : 'Menu'}
+                  </h2>
+                  {isAuthenticated && <p className="text-[10px] text-accent uppercase tracking-widest">Logged In</p>}
+                </div>
               </div>
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 90 }}
@@ -81,7 +91,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex-1 p-6">
+            <nav className="flex-1 p-6 overflow-y-auto">
               <ul className="space-y-1">
                 {menuItems.map((item, index) => (
                   <motion.li
@@ -102,6 +112,26 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                     </button>
                   </motion.li>
                 ))}
+
+                {isAuthenticated && (
+                  <motion.li
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: menuItems.length * 0.05 }}
+                  >
+                    <button
+                      onClick={() => {
+                        logout();
+                        onClose();
+                      }}
+                      className="w-full flex items-center justify-between py-4 text-accent hover:text-gold transition-colors group border-b border-[#449c80]"
+                    >
+                      <span className="font-serif text-lg font-semibold flex items-center gap-2">
+                        <LogOut size={18} /> Logout
+                      </span>
+                    </button>
+                  </motion.li>
+                )}
               </ul>
             </nav>
 

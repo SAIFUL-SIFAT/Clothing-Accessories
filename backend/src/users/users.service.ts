@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -36,6 +36,24 @@ export class UsersService {
         // Remove password from returned object
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...result } = savedUser;
+        return result;
+    }
+
+    async login(loginDto: any) {
+        const { email, password } = loginDto;
+        const user = await this.usersRepository.findOne({ where: { email } });
+
+        if (!user) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        const isPasswordMatching = await bcrypt.compare(password, user.password);
+        if (!isPasswordMatching) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password: _, ...result } = user;
         return result;
     }
 

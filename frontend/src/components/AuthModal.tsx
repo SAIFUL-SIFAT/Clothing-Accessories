@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, Phone, User, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { userApi } from '@/api/services';
+import { useAuth } from '@/context/AuthContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { login: setAuthUser } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -49,18 +51,22 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         });
         setMode('login');
       } else if (mode === 'login') {
-        // Login logic will go here
+        const response = await userApi.login({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        setAuthUser(response.data);
         toast({
           title: "Welcome back!",
-          description: "Login feature is coming soon.",
+          description: `Hello ${response.data.name}, you have successfully logged in.`,
         });
+        onClose();
       }
-
-      if (mode !== 'signup') onClose();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Something went wrong. Please try again.",
+        description: error.response?.data?.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
