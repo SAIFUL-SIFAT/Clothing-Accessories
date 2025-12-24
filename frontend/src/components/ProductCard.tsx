@@ -32,9 +32,8 @@ const ProductCard = ({ product, type = 'clothing', onAddToCart, index = 0 }: Pro
       transition={{ duration: 0.6, delay: index * 0.1 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`group relative overflow-hidden bg-card rounded-lg ${
-        type === 'ornament' ? 'break-inside-avoid mb-4' : ''
-      }`}
+      className={`group relative overflow-hidden bg-card rounded-lg ${type === 'ornament' ? 'break-inside-avoid mb-4' : ''
+        }`}
       style={{ boxShadow: 'var(--shadow-soft)' }}
     >
       {/* Image Container */}
@@ -51,7 +50,7 @@ const ProductCard = ({ product, type = 'clothing', onAddToCart, index = 0 }: Pro
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: isHovered ? 1 : 0 }}
-          className="absolute inset-0 bg-primary/40"
+          className="absolute inset-0 bg-black/40"
         />
 
         {/* Badges */}
@@ -82,11 +81,10 @@ const ProductCard = ({ product, type = 'clothing', onAddToCart, index = 0 }: Pro
               e.stopPropagation();
               setIsWishlisted(!isWishlisted);
             }}
-            className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
-              isWishlisted 
-                ? 'bg-destructive text-destructive-foreground' 
-                : 'bg-background/80 text-foreground hover:bg-background'
-            }`}
+            className={`p-2 rounded-full backdrop-blur-sm transition-colors ${isWishlisted
+              ? 'bg-destructive text-destructive-foreground'
+              : 'bg-background/80 text-foreground hover:bg-background'
+              }`}
           >
             <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} />
           </motion.button>
@@ -105,7 +103,7 @@ const ProductCard = ({ product, type = 'clothing', onAddToCart, index = 0 }: Pro
           animate={{ y: isHovered ? 0 : '100%' }}
           transition={{ duration: 0.3, ease: "easeOut" }}
           onClick={() => onAddToCart(product)}
-          className="absolute bottom-0 w-full bg-primary/95 backdrop-blur-sm text-primary-foreground py-4 flex items-center justify-center gap-2 font-medium uppercase tracking-wider text-sm hover:bg-primary transition-colors"
+          className="absolute bottom-0 w-full bg-[#1e1b0f] backdrop-blur-sm text-foreground py-4 flex items-center justify-center gap-2 font-medium uppercase tracking-wider text-sm hover:text-[#bfa045] transition-colors"
         >
           <ShoppingBag size={18} />
           Quick Add

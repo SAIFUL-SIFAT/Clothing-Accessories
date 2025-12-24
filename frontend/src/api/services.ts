@@ -1,7 +1,7 @@
 import api from './axios';
 
 export const productApi = {
-    getAll: (type?: string) => api.get('/products', { params: { type } }),
+    getAll: (type?: string, search?: string) => api.get('/products', { params: { type, q: search } }),
     getById: (id: number) => api.get(`/products/${id}`),
 };
 

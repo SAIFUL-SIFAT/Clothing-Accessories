@@ -21,7 +21,7 @@ import { User } from './users/entities/user.entity';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: process.env.DB_PASS ?? 'password',
+      password: process.env.DB_PASS ?? 'postgres123',
       database: 'petal_&_pearl',
       entities: [Product, User],
       synchronize: true

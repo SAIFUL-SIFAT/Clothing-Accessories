@@ -6,6 +6,7 @@ import AboutSection from '@/components/AboutSection';
 import PageLayout from '@/components/PageLayout';
 import { useCart } from '@/hooks/use-cart';
 import { productApi } from '@/api/services';
+import ProductCarousel from '@/components/ProductCarousel';
 
 const Index = () => {
   const { addToCart } = useCart();
@@ -46,6 +47,14 @@ const Index = () => {
         onAddToCart={addToCart}
       />
 
+      <ProductCarousel
+        title="New Arrivals"
+        subtitle="Just In"
+        products={clothing}
+        type="clothing"
+        onAddToCart={addToCart}
+      />
+
       {/* About Section */}
       <AboutSection />
 
@@ -53,6 +62,14 @@ const Index = () => {
       <ProductGrid
         title="Handcrafted Ornaments"
         subtitle="Timeless Jewelry"
+        products={ornaments}
+        type="ornament"
+        onAddToCart={addToCart}
+      />
+
+      <ProductCarousel
+        title="Trending Pieces"
+        subtitle="Most Loved"
         products={ornaments}
         type="ornament"
         onAddToCart={addToCart}

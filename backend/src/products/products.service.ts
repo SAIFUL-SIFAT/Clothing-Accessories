@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Product } from './entities/product.entity';
 
 @Injectable()
@@ -10,8 +10,19 @@ export class ProductsService {
         private productsRepository: Repository<Product>,
     ) { }
 
-    findAll() {
-        return this.productsRepository.find();
+    findAll(type?: 'clothing' | 'ornament', search?: string) {
+        if (search) {
+            return this.productsRepository.find({
+                where: [
+                    { ...(type ? { type } : {}), name: ILike(`%${search}%`) },
+                    { ...(type ? { type } : {}), category: ILike(`%${search}%`) }
+                ]
+            });
+        }
+
+        return this.productsRepository.find({
+            where: type ? { type } : {}
+        });
     }
 
     count() {

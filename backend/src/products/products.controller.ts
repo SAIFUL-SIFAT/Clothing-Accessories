@@ -6,11 +6,8 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService) { }
 
     @Get()
-    findAll(@Query('type') type?: 'clothing' | 'ornament') {
-        if (type) {
-            return this.productsService.findByType(type);
-        }
-        return this.productsService.findAll();
+    findAll(@Query('type') type?: 'clothing' | 'ornament', @Query('q') q?: string) {
+        return this.productsService.findAll(type, q);
     }
 
     @Get(':id')
