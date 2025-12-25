@@ -108,7 +108,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               style={{ boxShadow: 'var(--shadow-elegant)' }}
             >
               {/* Header */}
-              <div className="relative bg-primary text-primary-foreground p-8 text-center">
+              <div className="relative bg-[#1e1b0f] text-[#d9d6d1] p-8 text-center">
                 <motion.button
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
@@ -123,7 +123,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   {mode === 'signup' && 'Create Account'}
                   {mode === 'forgot' && 'Reset Password'}
                 </h2>
-                <p className="text-sm text-primary-foreground/70 text-balance">
+                <p className="text-sm text-[#d9d6d1]/70 text-balance">
                   {mode === 'login' && 'Sign in to continue your journey'}
                   {mode === 'signup' && 'Join our exclusive community'}
                   {mode === 'forgot' && 'Enter your email to receive a reset link'}

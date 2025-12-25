@@ -42,6 +42,15 @@ export class ProductsService {
         return this.productsRepository.save(product);
     }
 
+    async update(id: number, productData: Partial<Product>) {
+        await this.productsRepository.update(id, productData);
+        return this.productsRepository.findOneBy({ id });
+    }
+
+    async remove(id: number) {
+        return this.productsRepository.delete(id);
+    }
+
     async createMany(productsData: Partial<Product>[]) {
         const products = this.productsRepository.create(productsData);
         return this.productsRepository.save(products);

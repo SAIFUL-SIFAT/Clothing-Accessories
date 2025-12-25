@@ -29,10 +29,10 @@ const AboutSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
-              className="absolute -bottom-8 -left-8 bg-primary text-primary-foreground p-6 rounded-lg shadow-xl"
+              className="absolute -bottom-8 -left-8 bg-[#1c1a0e] text-primary p-6 rounded-lg shadow-xl"
             >
               <p className="text-4xl font-serif text-accent mb-1">15+</p>
-              <p className="text-sm text-primary-foreground/70">Years of Excellence</p>
+              <p className="text-sm text-primary/70">Years of Excellence</p>
             </motion.div>
           </motion.div>
 
