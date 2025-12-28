@@ -11,7 +11,8 @@ import {
     Image as ImageIcon,
     X,
     AlertCircle,
-    Check
+    Check,
+    Upload
 } from 'lucide-react';
 import { productApi } from '@/api/services';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +24,9 @@ const AdminProducts = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any>(null);
+    const [uploading, setUploading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>('');
     const { toast } = useToast();
 
     // Form State
@@ -57,6 +61,38 @@ const AdminProducts = () => {
         fetchProducts();
     }, []);
 
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleUploadImage = async () => {
+        if (!selectedFile) return null;
+
+        setUploading(true);
+        try {
+            const response = await productApi.upload(selectedFile);
+            return response.data.url;
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to upload image",
+                variant: "destructive"
+            });
+            return null;
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const handleOpenModal = (product: any = null) => {
         if (product) {
             setEditingProduct(product);
@@ -70,6 +106,8 @@ const AdminProducts = () => {
                 isNew: product.isNew,
                 isSale: product.isSale
             });
+            setImagePreview(product.image);
+            setSelectedFile(null);
         } else {
             setEditingProduct(null);
             setFormData({
@@ -82,6 +120,8 @@ const AdminProducts = () => {
                 isNew: false,
                 isSale: false
             });
+            setImagePreview('');
+            setSelectedFile(null);
         }
         setIsModalOpen(true);
     };
@@ -89,8 +129,35 @@ const AdminProducts = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            let imageUrl = formData.image;
+
+            // Upload image if a new file is selected
+            if (selectedFile) {
+                const uploadedUrl = await handleUploadImage();
+                if (!uploadedUrl) {
+                    toast({
+                        title: "Error",
+                        description: "Image upload failed. Please try again.",
+                        variant: "destructive"
+                    });
+                    return;
+                }
+                imageUrl = uploadedUrl;
+            }
+
+            // Validate that we have an image URL
+            if (!imageUrl) {
+                toast({
+                    title: "Error",
+                    description: "Please select an image",
+                    variant: "destructive"
+                });
+                return;
+            }
+
             const payload = {
                 ...formData,
+                image: imageUrl,
                 price: parseFloat(formData.price),
                 originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
             };
@@ -362,23 +429,54 @@ const AdminProducts = () => {
                                     {/* Right Column */}
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-accent">Image URL</label>
-                                            <input
-                                                type="url"
-                                                required
-                                                value={formData.image}
-                                                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                                                className="w-full bg-[#02140f] border border-[#449c80]/30 rounded-xl py-3 px-4 outline-none focus:border-accent transition-all text-sm sm:text-base"
-                                                placeholder="https://..."
-                                            />
+                                            <label className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-accent">Product Image</label>
+
+                                            {/* File Upload Button */}
+                                            <div className="flex gap-2">
+                                                <label className="flex-1 cursor-pointer">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleFileSelect}
+                                                        className="hidden"
+                                                    />
+                                                    <div className="w-full bg-[#02140f] border border-[#449c80]/30 rounded-xl py-3 px-4 hover:border-accent transition-all text-sm sm:text-base text-center flex items-center justify-center gap-2">
+                                                        <Upload size={18} />
+                                                        {selectedFile ? selectedFile.name : 'Choose Image File'}
+                                                    </div>
+                                                </label>
+                                            </div>
+
+                                            {/* Optional URL Input */}
+                                            <div className="relative">
+                                                <input
+                                                    type="url"
+                                                    value={formData.image}
+                                                    onChange={(e) => {
+                                                        setFormData({ ...formData, image: e.target.value });
+                                                        setImagePreview(e.target.value);
+                                                        setSelectedFile(null);
+                                                    }}
+                                                    className="w-full bg-[#02140f] border border-[#449c80]/30 rounded-xl py-3 px-4 outline-none focus:border-accent transition-all text-sm sm:text-base"
+                                                    placeholder="Or paste image URL..."
+                                                />
+                                            </div>
+
+                                            {uploading && (
+                                                <div className="text-accent text-sm flex items-center gap-2">
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent"></div>
+                                                    Uploading image...
+                                                </div>
+                                            )}
+
                                             {/* Image Preview */}
                                             <div className="aspect-video w-full bg-[#02140f] rounded-xl border border-[#449c80]/30 overflow-hidden flex items-center justify-center mt-2 group relative">
-                                                {formData.image ? (
-                                                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                                {imagePreview ? (
+                                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="text-muted-foreground flex flex-col items-center gap-2">
                                                         <ImageIcon size={32} className="opacity-50" />
-                                                        <span className="text-[10px]">No image preview</span>
+                                                        <span className="text-[10px]">No image selected</span>
                                                     </div>
                                                 )}
                                             </div>

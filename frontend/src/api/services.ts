@@ -6,6 +6,13 @@ export const productApi = {
     create: (data: any) => api.post('/products', data),
     update: (id: number, data: any) => api.patch(`/products/${id}`, data),
     remove: (id: number) => api.delete(`/products/${id}`),
+    upload: (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return api.post('/products/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    },
 };
 
 export const userApi = {
