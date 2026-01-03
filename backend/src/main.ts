@@ -15,12 +15,6 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Request Logging Middleware
-  app.use((req: any, res: any, next: any) => {
-    console.log(`[Request] ${req.method} ${req.url}`);
-    next();
-  });
-
   // Serve static files from uploads directory
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
@@ -35,6 +29,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       frontendUrl,
+      'https://petalpearl.netlify.app',
       'http://localhost:8080',
       'http://localhost:5173',
       'http://localhost:3000',
