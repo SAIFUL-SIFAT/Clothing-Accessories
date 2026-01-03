@@ -14,6 +14,8 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   // console.log('DB URL check:', process.env.DATABASE_URL ? 'Variable found' : 'VARIABLE NOT FOUND');
+  const bcrypt = require('bcrypt');
+  bcrypt.hash('admin@123', 10).then(console.log);
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Serve static files from uploads directory

@@ -4,9 +4,14 @@ import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { Order } from './entities/order.entity';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SteadfastModule } from '../steadfast/steadfast.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Order]), NotificationsModule],
+    imports: [
+        TypeOrmModule.forFeature([Order]),
+        NotificationsModule,
+        SteadfastModule,
+    ],
     controllers: [OrdersController],
     providers: [OrdersService],
     exports: [OrdersService],

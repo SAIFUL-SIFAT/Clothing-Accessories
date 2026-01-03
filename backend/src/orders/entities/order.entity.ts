@@ -51,4 +51,14 @@ export class Order {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    @Column({ type: 'varchar', nullable: true })
+    courier: 'steadfast' | null;
+
+    @Column({ type: 'varchar', nullable: true })
+    courierConsignmentId: string | null;
+
+    @Column({ type: 'varchar', nullable: true })
+    courierStatus: string | null;
+
 }

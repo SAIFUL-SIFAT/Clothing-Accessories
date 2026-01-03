@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { SteadfastService } from '../steadfast/steadfast.service';
 
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -12,6 +13,8 @@ export class OrdersService {
         @InjectRepository(Order)
         private ordersRepository: Repository<Order>,
         private notificationsService: NotificationsService,
+        private steadfastService: SteadfastService,
+
     ) { }
 
     async create(createOrderDto: CreateOrderDto, userId: number) {
@@ -88,4 +91,21 @@ export class OrdersService {
 
         return parseFloat(result.total) || 0;
     }
+
+    async confirmOrder(orderId: number) {
+        const order = await this.ordersRepository.findOne({ where: { id: orderId } });
+
+        if (!order) throw new Error('Order not found');
+
+        // Send to Steadfast
+        const steadfastResponse = await this.steadfastService.createParcel(order);
+
+        order.courier = 'steadfast';
+        order.courierConsignmentId = steadfastResponse.consignment_id;
+        order.courierStatus = 'created';
+        order.status = 'confirmed';
+
+        return this.ordersRepository.save(order);
+    }
+
 }

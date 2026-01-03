@@ -30,6 +30,7 @@ export const orderApi = {
     getById: (id: number) => api.get(`/orders/${id}`),
     updateStatus: (id: number, status: string) => api.patch(`/orders/${id}/status`, { status }),
     updatePaymentStatus: (id: number, paymentStatus: string) => api.patch(`/orders/${id}/payment-status`, { paymentStatus }),
+    confirm: (id: number) => api.post(`/orders/${id}/confirm`),
 };
 
 export const notificationApi = {

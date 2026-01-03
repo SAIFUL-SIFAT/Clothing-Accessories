@@ -89,6 +89,26 @@ const AdminOrders = () => {
         }
     };
 
+    const handleConfirmOrder = async (id: number) => {
+        try {
+            setLoading(true);
+            await orderApi.confirm(id);
+            toast({
+                title: "Order Confirmed",
+                description: `Order #${id} has been sent to Steadfast Courier`,
+            });
+            await fetchOrders();
+        } catch (error: any) {
+            toast({
+                title: "Confirmation Failed",
+                description: error.response?.data?.message || "Failed to connect to Steadfast",
+                variant: "destructive"
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const getStatusStyle = (status: string) => {
         switch (status?.toLowerCase()) {
             case 'pending': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
@@ -279,7 +299,34 @@ const AdminOrders = () => {
                                             <Truck size={20} />
                                             <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">Logistic Lifecycle</h3>
                                         </div>
-                                        <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
+
+                                        {selectedOrder.courier === 'steadfast' ? (
+                                            <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                    <p className="text-[10px] text-emerald-500 font-bold uppercase">Steadfast Logistics</p>
+                                                    <span className="text-[10px] px-2 py-0.5 bg-emerald-500 text-white rounded-full uppercase">
+                                                        {selectedOrder.courierStatus}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">Consignment ID:</p>
+                                                <p className="font-mono text-sm font-bold text-foreground">{selectedOrder.courierConsignmentId}</p>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleConfirmOrder(selectedOrder.id)}
+                                                disabled={loading}
+                                                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent/20 disabled:opacity-50"
+                                            >
+                                                {loading ? (
+                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                ) : (
+                                                    <Package size={16} />
+                                                )}
+                                                Confirm & Send to Steadfast
+                                            </button>
+                                        )}
+
+                                        <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 pt-2 border-t border-white/5">
                                             {['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
                                                 <button
                                                     key={status}
@@ -293,9 +340,6 @@ const AdminOrders = () => {
                                                 </button>
                                             ))}
                                         </div>
-                                        <p className="text-[9px] text-muted-foreground text-center italic">
-                                            Updating order status will notify the customer via their portal.
-                                        </p>
                                     </div>
                                 </div>
 
