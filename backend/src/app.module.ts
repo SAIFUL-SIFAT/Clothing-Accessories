@@ -120,6 +120,7 @@ import { AuthModule } from './auth/auth.module';
             database: configService.get<string>('DB_NAME', 'petal_pearl'),
           }),
           entities: [Product, User, Order, Notification],
+          schema: 'public', // ✅ Explicitly force public schema for Neon DB
           synchronize: true, // Set to true to ensure tables are created in Neon during test
           ssl: nodeEnv === 'production' || !!dbUrl,
           extra: {
