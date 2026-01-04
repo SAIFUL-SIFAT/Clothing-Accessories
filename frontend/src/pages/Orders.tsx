@@ -138,7 +138,7 @@ const Orders = () => {
                     </motion.div>
                 ) : (
                     <div className="space-y-8">
-                        {orders.map((order) => (
+                        {orders.map((order, index) => (
                             <motion.div
                                 key={order.id}
                                 initial={{ opacity: 0, y: 30 }}
@@ -148,7 +148,7 @@ const Orders = () => {
                                 <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-3">
-                                            <h3 className="text-2xl font-serif">Order #{order.id}</h3>
+                                            <h3 className="text-2xl font-serif">Order #{orders.length - index}</h3>
                                             <span className={`px-4 py-1 rounded-full text-[10px] font-bold uppercase border ${getStatusColor(order.status)}`}>
                                                 {order.status}
                                             </span>
