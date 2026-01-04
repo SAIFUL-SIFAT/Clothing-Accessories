@@ -25,15 +25,21 @@ async function bootstrap() {
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   }));
 
-  const frontendUrl = process.env.FRONTEND_URL;
+  const allowedOrigins = [
+    // Production Frontend
+    'https://petalpearl.netlify.app',
+
+    // Development / Localhost
+    'http://localhost:8080',
+    'http://localhost:5173',
+    'http://localhost:3000',
+
+    // Dynamic Environment Variable (if set)
+    process.env.FRONTEND_URL,
+  ].filter((origin): origin is string => !!origin);
+
   app.enableCors({
-    origin: [
-      frontendUrl,
-      'https://petalpearl.netlify.app',
-      'http://localhost:8080',
-      'http://localhost:5173',
-      'http://localhost:3000',
-    ].filter((origin): origin is string => !!origin),
+    origin: allowedOrigins,
     credentials: true,
   });
 
