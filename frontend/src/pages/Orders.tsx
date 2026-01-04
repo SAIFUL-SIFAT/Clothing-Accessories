@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, MapPin, Calendar, CreditCard, Eye, ArrowLeft, ShieldCheck, Clock } from 'lucide-react';
+import { Package, MapPin, Calendar, CreditCard, Eye, ArrowLeft, ShieldCheck, Clock, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { orderApi } from '@/api/services';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface OrderItem {
     productId: number;
@@ -91,6 +93,156 @@ const Orders = () => {
         });
     };
 
+    const generateInvoicePDF = (order: Order, orderNumber: number) => {
+        const doc = new jsPDF();
+
+        // Brand Colors
+        const brandGold: [number, number, number] = [183, 171, 144]; // #b7ab90
+        const brandDark: [number, number, number] = [3, 34, 24]; // #032218
+        const brandAccent: [number, number, number] = [68, 156, 128]; // #449c80
+
+        // Header - Company Name
+        doc.setFillColor(...brandDark);
+        doc.rect(0, 0, 210, 45, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(28);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Petal & Pearl', 105, 20, { align: 'center' });
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Boutique', 105, 28, { align: 'center' });
+
+        doc.setFontSize(9);
+        doc.text('Exquisite Fashion & Handcrafted Ornaments', 105, 36, { align: 'center' });
+
+        // Invoice Title
+        doc.setTextColor(...brandGold);
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.text('INVOICE', 20, 60);
+
+        // Invoice Details
+        doc.setTextColor(60, 60, 60);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Invoice #: ORD-${orderNumber}`, 20, 70);
+        doc.text(`Date: ${formatDate(order.createdAt)}`, 20, 76);
+        doc.text(`Status: ${order.status.toUpperCase()}`, 20, 82);
+
+        // Customer Details Box
+        doc.setDrawColor(...brandAccent);
+        doc.setLineWidth(0.5);
+        doc.rect(20, 90, 170, 30);
+
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...brandDark);
+        doc.text('BILL TO:', 25, 98);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 60, 60);
+        doc.text(order.customerName, 25, 105);
+        doc.text(order.customerEmail, 25, 111);
+        doc.text(order.customerPhone, 25, 117);
+
+        // Shipping Address
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        const addressLines = doc.splitTextToSize(order.shippingAddress, 80);
+        doc.text(addressLines, 110, 105);
+
+        // Items Table
+        const tableData = order.items.map((item) => [
+            item.name,
+            item.quantity.toString(),
+            `৳${item.price.toLocaleString()}`,
+            `৳${(item.price * item.quantity).toLocaleString()}`
+        ]);
+
+        autoTable(doc, {
+            startY: 130,
+            head: [['Product', 'Qty', 'Price', 'Total']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: {
+                fillColor: brandDark,
+                textColor: [255, 255, 255],
+                fontSize: 10,
+                fontStyle: 'bold',
+                halign: 'center',
+                cellPadding: 3
+            },
+            bodyStyles: {
+                fontSize: 9,
+                textColor: [60, 60, 60],
+                cellPadding: 3
+            },
+            columnStyles: {
+                0: { cellWidth: 70 },
+                1: { halign: 'center', cellWidth: 20 },
+                2: { halign: 'center', cellWidth: 45 },
+                3: { halign: 'center', cellWidth: 45 }
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245]
+            }
+        });
+
+        // Get final Y position after table
+        const finalY = (doc as any).lastAutoTable.finalY || 130;
+
+        // Payment Details
+        doc.setDrawColor(...brandAccent);
+        doc.rect(20, finalY + 10, 170, 30);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...brandDark);
+        doc.text('Payment Method:', 25, finalY + 18);
+        doc.setFont('helvetica', 'normal');
+        doc.text(order.paymentMethod.replace(/_/g, ' ').toUpperCase(), 70, finalY + 18);
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('Payment Status:', 25, finalY + 26);
+        const paymentStatusColor: [number, number, number] = order.paymentStatus === 'paid' ? [34, 197, 94] : [234, 179, 8];
+        doc.setTextColor(...paymentStatusColor);
+        doc.text(order.paymentStatus.toUpperCase(), 70, finalY + 26);
+
+        if (order.transactionId) {
+            doc.setTextColor(60, 60, 60);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Transaction ID:', 25, finalY + 34);
+            doc.setFont('helvetica', 'normal');
+            doc.text(order.transactionId, 70, finalY + 34);
+        }
+
+        // Total Amount Box
+        doc.setFillColor(...brandGold);
+        doc.rect(130, finalY + 10, 60, 30, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('TOTAL:', 135, finalY + 18);
+        doc.setFontSize(14);
+        // Box is from 130 to 190. Center is 160.
+        doc.text(`৳${order.totalAmount.toLocaleString()}`, 160, finalY + 32, { align: 'center' });
+
+        // Footer
+        const pageHeight = doc.internal.pageSize.height;
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.setFont('helvetica', 'italic');
+        doc.text('Thank you for your patronage at Petal & Pearl Boutique', 105, pageHeight - 20, { align: 'center' });
+        doc.text('For inquiries, please contact us at support@petalpearl.com', 105, pageHeight - 15, { align: 'center' });
+
+        // Save PDF
+        doc.save(`Petal-Pearl-Invoice-${orderNumber}.pdf`);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -169,12 +321,22 @@ const Orders = () => {
                                             <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Total Value</p>
                                             <p className="text-3xl font-bold text-accent">৳{order.totalAmount.toLocaleString()}</p>
                                         </div>
-                                        <button
-                                            onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}
-                                            className="bg-white/5 p-4 rounded-2xl hover:bg-accent hover:text-accent-foreground transition-all border border-white/10"
-                                        >
-                                            <Eye size={20} />
-                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => generateInvoicePDF(order, orders.length - index)}
+                                                className="bg-white/5 p-4 rounded-2xl hover:bg-accent hover:text-accent-foreground transition-all border border-white/10"
+                                                title="Download Invoice"
+                                            >
+                                                <Download size={20} />
+                                            </button>
+                                            <button
+                                                onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}
+                                                className="bg-white/5 p-4 rounded-2xl hover:bg-accent hover:text-accent-foreground transition-all border border-white/10"
+                                                title="View Details"
+                                            >
+                                                <Eye size={20} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 

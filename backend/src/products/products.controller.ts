@@ -26,7 +26,7 @@ export class ProductsController {
     @Post('upload')
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({
-            destination: './uploads/products',
+            destination: './public/assets',
             filename: (req, file, callback) => {
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
                 const ext = extname(file.originalname);
@@ -50,8 +50,8 @@ export class ProductsController {
         }
         return {
             filename: file.filename,
-            path: `/uploads/products/${file.filename}`,
-            url: `http://localhost:3000/uploads/products/${file.filename}`
+            path: `/assets/${file.filename}`,
+            url: `http://localhost:3000/assets/${file.filename}`
         };
     }
 
