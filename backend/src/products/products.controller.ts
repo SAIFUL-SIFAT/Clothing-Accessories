@@ -1,12 +1,17 @@
-import { Controller, Get, Param, Query, Post, Body, Patch, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Param, Query, Post, Body, Patch, Delete, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ProductsService } from './products.service';
+import { ConfigService } from '@nestjs/config';
+import type { Request } from 'express';
 
 @Controller('products')
 export class ProductsController {
-    constructor(private readonly productsService: ProductsService) { }
+    constructor(
+        private readonly productsService: ProductsService,
+        private readonly configService: ConfigService
+    ) { }
 
     @Get()
     findAll(@Query('type') type?: 'clothing' | 'ornament', @Query('q') q?: string) {
@@ -44,14 +49,20 @@ export class ProductsController {
             fileSize: 5 * 1024 * 1024, // 5MB
         }
     }))
-    uploadFile(@UploadedFile() file: any) {
+    uploadFile(@UploadedFile() file: any, @Req() req: Request) {
         if (!file) {
             throw new Error('File upload failed');
         }
+
+        // Use BACKEND_URL from env if it exists, otherwise use the request host
+        const protocol = req.protocol;
+        const host = req.get('host');
+        const baseUrl = this.configService.get('BACKEND_URL') || `${protocol}://${host}`;
+
         return {
             filename: file.filename,
             path: `/assets/${file.filename}`,
-            url: `http://localhost:3000/assets/${file.filename}`
+            url: `${baseUrl}/assets/${file.filename}`
         };
     }
 
