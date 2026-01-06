@@ -6,6 +6,7 @@ import { ProductsService } from './products.service';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 
+import { CreateProductDto } from './dto/create-product.dto';
 @Controller('products')
 export class ProductsController {
     constructor(
@@ -45,8 +46,8 @@ export class ProductsController {
     }
 
     @Post()
-    create(@Body() createProductDto: any) {
-        return this.productsService.create(createProductDto);
+    async create(@Body() createProductDto: CreateProductDto) {
+        return await this.productsService.create(createProductDto);
     }
 
     @Post('upload')
@@ -75,7 +76,6 @@ export class ProductsController {
             throw new Error('File upload failed');
         }
 
-        // Use BACKEND_URL from env if it exists, otherwise use the request host
         const protocol = req.protocol;
         const host = req.get('host');
         const baseUrl = this.configService.get('BACKEND_URL') || `${protocol}://${host}`;

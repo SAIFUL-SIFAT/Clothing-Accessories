@@ -179,6 +179,7 @@ const AdminProducts = () => {
                 price: parseFloat(formData.price),
                 originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
                 stock: parseInt(formData.stock) || 0,
+                tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '') : []
             };
 
             if (editingProduct) {
