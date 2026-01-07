@@ -10,8 +10,8 @@ interface MobileMenuProps {
 
 const menuItems = [
   { name: 'Home', href: '/' },
-  { name: 'Collections', href: '/collections' },
   { name: 'Ornaments', href: '/ornaments' },
+  { name: 'Collections', href: '/collections' },
   { name: 'New Arrivals', href: '/collections' },
   { name: 'Sale', href: '/collections' },
   { name: 'Favorites', href: '/favorites' },

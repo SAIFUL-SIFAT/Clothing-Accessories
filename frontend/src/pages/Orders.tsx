@@ -33,13 +33,15 @@ interface Order {
 
 const Orders = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, isLoading: isAuthLoading } = useAuth();
     const { toast } = useToast();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
     useEffect(() => {
+        if (isAuthLoading) return;
+
         if (!user) {
             navigate('/');
             return;
@@ -61,7 +63,7 @@ const Orders = () => {
         };
 
         fetchOrders();
-    }, [user, navigate, toast]);
+    }, [user, isAuthLoading, navigate, toast]);
 
     const getStatusColor = (status: string) => {
         const colors: Record<string, string> = {

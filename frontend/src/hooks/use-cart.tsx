@@ -31,14 +31,24 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
 
-    // Load cart from backend on mount
+    // Load cart from localStorage or backend on mount
     React.useEffect(() => {
+        const savedCart = localStorage.getItem('cart');
+        if (savedCart) {
+            try {
+                setCartItems(JSON.parse(savedCart));
+            } catch (e) {
+                console.error("Failed to parse saved cart", e);
+            }
+        }
+
         const loadCart = async () => {
             if (isAuthenticated && user?.id) {
                 try {
                     const res = await cartApi.getByUser(user.id);
                     if (res.data && res.data.items && res.data.items.length > 0) {
                         setCartItems(res.data.items);
+                        localStorage.setItem('cart', JSON.stringify(res.data.items));
                     }
                 } catch (error) {
                     console.error("Failed to load cart:", error);
@@ -48,8 +58,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         loadCart();
     }, [isAuthenticated, user?.id]);
 
-    // Sync cart to backend when it changes
+    // Sync cart to backend and localStorage when it changes
     React.useEffect(() => {
+        if (cartItems.length > 0) {
+            localStorage.setItem('cart', JSON.stringify(cartItems));
+        } else if (cartItems.length === 0 && localStorage.getItem('cart')) {
+            localStorage.removeItem('cart');
+        }
+
         const syncCart = async () => {
             if (isAuthenticated && user?.id) {
                 try {

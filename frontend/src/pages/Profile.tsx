@@ -6,7 +6,15 @@ import { User, Mail, Phone, Calendar, Shield, Package } from 'lucide-react';
 import { Navigate, Link } from 'react-router-dom';
 
 const Profile = () => {
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     if (!isAuthenticated) {
         return <Navigate to="/" replace />;

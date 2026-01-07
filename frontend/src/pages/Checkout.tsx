@@ -40,11 +40,11 @@ const PaymentInstructions = ({ paymentMethod, transactionId, total, onInputChang
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
                         <div>
                             <p className="text-[10px] text-muted-foreground uppercase">Personal Number</p>
-                            <p className="font-bold font-mono">017XXXXXXXX</p>
+                            <p className="font-bold font-mono">01758761248</p>
                         </div>
                         <button
                             type="button"
-                            onClick={() => onCopy('017XXXXXXXX', 'Account Number')}
+                            onClick={() => onCopy('01758761248', 'Account Number')}
                             className="p-2 hover:bg-accent/10 text-accent rounded-lg transition-colors"
                         >
                             <Copy size={16} />
@@ -143,13 +143,24 @@ const Checkout = () => {
     const { toast } = useToast();
 
     const [formData, setFormData] = useState({
-        customerName: user?.name || '',
-        customerEmail: user?.email || '',
-        customerPhone: user?.phone || '',
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
         shippingAddress: '',
         paymentMethod: 'cash_on_delivery',
         transactionId: '',
     });
+
+    React.useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                customerName: prev.customerName || user.name || '',
+                customerEmail: prev.customerEmail || user.email || '',
+                customerPhone: prev.customerPhone || user.phone || '',
+            }));
+        }
+    }, [user]);
 
     const [isProcessing, setIsProcessing] = useState(false);
 
