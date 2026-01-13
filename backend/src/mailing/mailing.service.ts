@@ -26,10 +26,14 @@ export class MailingService {
             port,
             secure,
             auth: { user, pass },
-            connectionTimeout: 10000,
-            greetingTimeout: 10000,
-            socketTimeout: 15000,
-        });
+            // Increase timeouts significantly for cloud environments
+            connectionTimeout: 60000, // 60s
+            greetingTimeout: 30000,   // 30s
+            socketTimeout: 60000,     // 60s
+            dnsTimeout: 60000,        // 60s
+            // Force IPv4 to avoid IPv6 timeouts in some restricted cloud networks
+            family: 4,
+        } as any);
 
         this.transporter.verify((error) => {
             if (error) {
