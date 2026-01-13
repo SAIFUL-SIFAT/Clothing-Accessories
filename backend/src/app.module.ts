@@ -74,6 +74,8 @@ import { join } from 'path';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { DatabaseWakeupMiddleware } from './database-wakeup.middleware';
+import { NestModule, MiddlewareConsumer } from '@nestjs/common';
 
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
@@ -125,6 +127,8 @@ import { AuthModule } from './auth/auth.module';
           entities: [Product, User, Order, Notification, Cart],
           schema: 'public', //  Explicitly force public schema for Neon DB
           synchronize: true, // Set to true to ensure tables are created in Neon during test
+          retryAttempts: 15,
+          retryDelay: 3000,
           ssl: nodeEnv === 'production' || !!dbUrl,
           extra: {
             ssl: (nodeEnv === 'production' || !!dbUrl)
@@ -132,6 +136,10 @@ import { AuthModule } from './auth/auth.module';
               : null,
             family: 4,
             keepAlive: true,
+            max: 5,           // Lower from default 10
+            min: 1,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 45000,
           },
         };
       },
@@ -152,4 +160,10 @@ import { AuthModule } from './auth/auth.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(DatabaseWakeupMiddleware)
+      .forRoutes('*');
+  }
+}

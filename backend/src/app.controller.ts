@@ -1,4 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { AppService } from './app.service';
 import { ProductsService } from './products/products.service';
 import { UsersService } from './users/users.service';
@@ -11,7 +12,14 @@ export class AppController {
     private readonly productsService: ProductsService,
     private readonly usersService: UsersService,
     private readonly ordersService: OrdersService,
+    private readonly dataSource: DataSource,
   ) { }
+
+  @Get('health')
+  async ping() {
+    await this.dataSource.query('SELECT 1');
+    return 'OK';
+  }
 
   @Get()
   getHello(): string {
