@@ -147,7 +147,14 @@ export class OrdersService {
         order.courierStatus = steadfastResponse.consignment.status; // Should be 'in_review'
         order.status = 'confirmed';
 
-        return this.ordersRepository.save(order);
+        const savedOrder = await this.ordersRepository.save(order);
+
+        // Send confirmation email to customer (async)
+        this.mailingService.sendOrderConfirmation(savedOrder).catch(err =>
+            console.error('Failed to send order confirmation email:', err)
+        );
+
+        return savedOrder;
     }
 
     async syncStatus(orderId: number) {
