@@ -39,7 +39,7 @@ export class MailingService {
     }
 
     async sendOrderNotification(order: any) {
-        const recipients = ['sifat.sai3@gmail.com'];
+        const recipients = ['sifat.sai3@gmail.com', 'shahela17@gmail.com'];
         const subject = `New Order #${order.id} - Petal & Pearl`;
 
         // Use SMTP_USER for from field if SMTP_FROM is not set, as Gmail requires this

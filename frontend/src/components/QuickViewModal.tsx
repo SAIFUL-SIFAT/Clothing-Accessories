@@ -123,7 +123,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onAddToCart }: QuickViewModa
                             </div>
 
                             {/* Related Products Section */}
-                            {relatedProducts.length > 0 && (
+                            {/* {relatedProducts.length > 0 && (
                                 <div className="p-6 md:p-8 border-t border-border/50 bg-black/20">
                                     <h3 className="font-serif text-2xl mb-6 text-foreground">You May Also Like</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -137,7 +137,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onAddToCart }: QuickViewModa
                                         ))}
                                     </div>
                                 </div>
-                            )}
+                            )} */}
                         </div>
                     </motion.div>
                 </div>

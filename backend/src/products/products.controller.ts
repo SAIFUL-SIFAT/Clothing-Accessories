@@ -21,8 +21,12 @@ export class ProductsController {
         @Query('material') material?: string,
         @Query('occasion') occasion?: string,
         @Query('color') color?: string,
+        @Query('category') category?: string,
         @Query('minPrice') minPrice?: string,
         @Query('maxPrice') maxPrice?: string,
+        @Query('sortBy') sortBy?: 'price' | 'name' | 'date',
+        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+        @Query('inStock') inStock?: string,
     ) {
         return this.productsService.findAll({
             type,
@@ -30,8 +34,12 @@ export class ProductsController {
             material,
             occasion,
             color,
+            category,
             minPrice: minPrice ? parseFloat(minPrice) : undefined,
             maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+            sortBy,
+            sortOrder,
+            inStock: inStock === 'true',
         });
     }
 

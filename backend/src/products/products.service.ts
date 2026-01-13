@@ -16,15 +16,26 @@ export class ProductsService {
         material?: string;
         occasion?: string;
         color?: string;
+        category?: string;
         minPrice?: number;
         maxPrice?: number;
+        sortBy?: 'price' | 'name' | 'date';
+        sortOrder?: 'ASC' | 'DESC';
+        inStock?: boolean;
     }) {
-        const { type, search, material, occasion, color, minPrice, maxPrice } = query;
+        const {
+            type, search, material, occasion, color, category,
+            minPrice, maxPrice, sortBy, sortOrder, inStock
+        } = query;
 
         const queryBuilder = this.productsRepository.createQueryBuilder('product');
 
         if (type) {
             queryBuilder.andWhere('product.type = :type', { type });
+        }
+
+        if (category) {
+            queryBuilder.andWhere('product.category = :category', { category });
         }
 
         if (material) {
@@ -47,12 +58,32 @@ export class ProductsService {
             queryBuilder.andWhere('product.price <= :maxPrice', { maxPrice });
         }
 
+        if (inStock) {
+            queryBuilder.andWhere('product.stock > 0');
+        }
+
         if (search) {
             queryBuilder.andWhere(
                 '(product.name ILIKE :search OR product.category ILIKE :search OR product.description ILIKE :search OR :search = ANY(product.tags))',
                 { search: `%${search}%` }
             );
         }
+
+        // Sorting
+        const order = sortOrder || 'DESC';
+        if (sortBy === 'price') {
+            queryBuilder.orderBy('product.price', order);
+        } else if (sortBy === 'name') {
+            queryBuilder.orderBy('product.name', order);
+        } else if (sortBy === 'date') {
+            // Use createdAt if possible, fallback to id
+            queryBuilder.orderBy('product.createdAt', order);
+        } else {
+            queryBuilder.orderBy('product.id', 'DESC');
+        }
+
+        // Always add id as a secondary sort for stability
+        queryBuilder.addOrderBy('product.id', 'DESC');
 
         return queryBuilder.getMany();
     }

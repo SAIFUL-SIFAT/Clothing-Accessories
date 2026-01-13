@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Orders from "./pages/Orders";
 import Chatbot from "./components/Chatbot";
+import ProductDetail from "./pages/ProductDetail";
 
 import { CartProvider } from "./hooks/use-cart";
 import { AuthProvider } from "./context/AuthContext";
@@ -40,6 +41,8 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/ornaments" element={<Ornaments />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/product/:id/:slug" element={<ProductDetail />} />
                   <Route path="/collections" element={<Collections />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route element={<ProtectedRoute />}>

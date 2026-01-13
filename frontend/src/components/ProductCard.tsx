@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { ShoppingBag, Heart, Eye } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useWishlist } from '@/context/WishlistContext';
 import { useQuickView } from '@/context/QuickViewContext';
@@ -34,8 +35,18 @@ const ProductCard = ({ product, type = 'clothing', onAddToCart, index = 0 }: Pro
   const [isHovered, setIsHovered] = useState(false);
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { openQuickView } = useQuickView();
+  const navigate = useNavigate();
   const isWishlisted = isInWishlist(product.id);
   const isOutOfStock = product.stock <= 0;
+
+  const slugify = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^\w ]+/g, '')
+      .replace(/ +/g, '-');
+  };
+
+  const productUrl = `/product/${product.id}/${slugify(product.name)}`;
 
   return (
     <motion.div
@@ -49,7 +60,10 @@ const ProductCard = ({ product, type = 'clothing', onAddToCart, index = 0 }: Pro
       style={{ boxShadow: 'var(--shadow-soft)' }}
     >
       {/* Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden cursor-pointer">
+      <div
+        className="relative aspect-[3/4] overflow-hidden cursor-pointer"
+        onClick={() => navigate(productUrl)}
+      >
         <motion.img
           animate={{ scale: isHovered ? 1.1 : 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -127,10 +141,13 @@ const ProductCard = ({ product, type = 'clothing', onAddToCart, index = 0 }: Pro
           <motion.button
             initial={{ y: '100%' }}
             animate={{ y: isHovered ? 0 : '100%' }}
-            className="absolute bottom-0 w-full bg-[#1e1b0f]/90 backdrop-blur-md text-foreground py-3 sm:py-4 flex items-center justify-center gap-2 font-medium uppercase tracking-wider text-[10px] sm:text-xs md:text-sm hover:text-[#bfa045] transition-colors lg:opacity-0 lg:group-hover:opacity-100 sm:translate-y-0 translate-y-0"
-            onClick={() => onAddToCart(product)}
+            className="absolute bottom-0 w-full bg-[#1e1b0f]/90 backdrop-blur-md text-foreground py-3 sm:py-4 flex items-center justify-center gap-3 font-bold uppercase tracking-widest text-[10px] sm:text-xs hover:text-accent transition-all group lg:opacity-0 lg:group-hover:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
           >
-            <ShoppingBag size={16} className="sm:w-[18px] sm:h-[18px]" />
+            <ShoppingBag size={18} className="transition-transform group-hover:-translate-y-0.5" />
             Quick Add
           </motion.button>
         )}
@@ -141,24 +158,27 @@ const ProductCard = ({ product, type = 'clothing', onAddToCart, index = 0 }: Pro
         <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">
           {product.category}
         </p>
-        <h3 className="font-serif text-lg text-foreground mb-2 line-clamp-1">
+        <h3
+          className="font-serif text-lg text-foreground mb-2 line-clamp-1 cursor-pointer hover:text-accent transition-colors"
+          onClick={() => navigate(productUrl)}
+        >
           {product.name}
         </h3>
         <div className="flex items-center justify-center gap-2 mb-2">
           <span className="text-accent font-semibold">৳ {product.price.toLocaleString()}</span>
           {product.originalPrice && (
-            <span className="text-muted-foreground line-through text-sm">
+            <span className="text-muted-foreground line-through text-sm opacity-50">
               ৳ {product.originalPrice.toLocaleString()}
             </span>
           )}
         </div>
         <div className="text-[10px] uppercase tracking-wider font-medium">
           {isOutOfStock ? (
-            <span className="text-destructive">Out of Stock</span>
+            <span className="text-destructive font-bold uppercase">Sold Out</span>
           ) : product.stock <= 5 ? (
-            <span className="text-amber-500">Only {product.stock} left in stock!</span>
+            <span className="text-amber-500 font-bold">Only {product.stock} Left!</span>
           ) : (
-            <span className="text-green-400">{product.stock} available</span>
+            <span className="text-green-500/80 tracking-[0.1em]">{product.stock} In Stock</span>
           )}
         </div>
       </div>

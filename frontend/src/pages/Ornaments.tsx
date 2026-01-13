@@ -23,7 +23,12 @@ const Ornaments = () => {
         material: null,
         occasion: null,
         color: null,
-        category: null
+        category: null,
+        minPrice: null,
+        maxPrice: null,
+        inStock: false,
+        sortBy: 'date',
+        sortOrder: 'DESC' as 'ASC' | 'DESC'
     });
 
     useEffect(() => {
@@ -58,8 +63,12 @@ const Ornaments = () => {
         fetchProducts();
     }, [activeFilters]);
 
-    const handleFilterChange = (key: string, value: string | null) => {
-        setActiveFilters(prev => ({ ...prev, [key]: value }));
+    const handleFilterChange = (key: string | Record<string, any>, value?: any) => {
+        if (typeof key === 'object') {
+            setActiveFilters(prev => ({ ...prev, ...key }));
+        } else {
+            setActiveFilters(prev => ({ ...prev, [key]: value }));
+        }
     };
 
     const resetFilters = () => {
@@ -67,7 +76,12 @@ const Ornaments = () => {
             material: null,
             occasion: null,
             color: null,
-            category: null
+            category: null,
+            minPrice: null,
+            maxPrice: null,
+            inStock: false,
+            sortBy: 'date',
+            sortOrder: 'DESC'
         });
     };
 
@@ -124,11 +138,6 @@ const Ornaments = () => {
                             >
                                 <div className="relative">
                                     <SlidersHorizontal size={20} className="text-gold" />
-                                    {activeFilterCount > 0 && (
-                                        <span className="absolute -top-2 -right-2 bg-gold text-primary text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                                            {activeFilterCount}
-                                        </span>
-                                    )}
                                 </div>
                                 <span className="text-sm font-bold uppercase tracking-widest text-gold text-shadow-sm">Filters</span>
                             </button>
@@ -144,14 +153,51 @@ const Ornaments = () => {
                                 exit={{ opacity: 0, y: -10 }}
                                 className="flex flex-wrap gap-2 mb-8"
                             >
-                                {Object.entries(activeFilters).map(([key, value]) => value && (
-                                    <span key={key} className="flex items-center gap-2 bg-gold/10 border border-gold/20 px-4 py-1.5 rounded-full text-xs text-gold font-medium">
-                                        <span className="capitalize text-[10px] opacity-60 mr-1">{key}:</span> {value}
-                                        <button onClick={() => handleFilterChange(key, null)} className="hover:text-foreground">
-                                            <X size={14} />
-                                        </button>
-                                    </span>
-                                ))}
+                                {Object.entries(activeFilters).map(([key, value]) => {
+                                    if (!value) return null;
+
+                                    // Skip default sorting for chips
+                                    if (key === 'sortBy' && value === 'date' && activeFilters.sortOrder === 'DESC') return null;
+                                    if (key === 'sortOrder') return null;
+
+                                    let displayValue = value;
+                                    let displayKey = key;
+
+                                    if (key === 'inStock') {
+                                        displayKey = 'Availability';
+                                        displayValue = 'In Stock';
+                                    } else if (key === 'minPrice') {
+                                        displayKey = 'Min Price';
+                                        displayValue = `৳${value}`;
+                                    } else if (key === 'maxPrice') {
+                                        displayKey = 'Max Price';
+                                        displayValue = `৳${value}`;
+                                    } else if (key === 'sortBy') {
+                                        displayKey = 'Sorted By';
+                                        const orderLabel = activeFilters.sortOrder === 'ASC' ?
+                                            (value === 'price' ? 'Low to High' : value === 'name' ? 'A-Z' : 'Oldest First') :
+                                            (value === 'price' ? 'High to Low' : value === 'name' ? 'Z-A' : 'Newest First');
+                                        displayValue = `${value.charAt(0).toUpperCase() + value.slice(1)} (${orderLabel})`;
+                                    }
+
+                                    return (
+                                        <span key={key} className="flex items-center gap-2 bg-gold/10 border border-gold/20 px-4 py-1.5 rounded-full text-xs text-gold font-medium">
+                                            <span className="capitalize text-[10px] opacity-60 mr-1">{displayKey}:</span> {displayValue}
+                                            <button
+                                                onClick={() => {
+                                                    if (key === 'sortBy') {
+                                                        handleFilterChange({ sortBy: 'date', sortOrder: 'DESC' });
+                                                    } else {
+                                                        handleFilterChange(key, key === 'inStock' ? false : null);
+                                                    }
+                                                }}
+                                                className="hover:text-foreground"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </span>
+                                    );
+                                })}
                             </motion.div>
                         )}
                     </AnimatePresence>
