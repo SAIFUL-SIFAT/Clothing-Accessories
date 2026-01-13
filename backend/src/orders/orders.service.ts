@@ -150,9 +150,9 @@ export class OrdersService {
         const savedOrder = await this.ordersRepository.save(order);
 
         // Send confirmation email to customer (async)
-        this.mailingService.sendOrderConfirmation(savedOrder).catch(err =>
-            console.error('Failed to send order confirmation email:', err)
-        );
+        // this.mailingService.sendOrderConfirmation(savedOrder).catch(err =>
+        //     console.error('Failed to send order confirmation email:', err)
+        // );
 
         return savedOrder;
     }

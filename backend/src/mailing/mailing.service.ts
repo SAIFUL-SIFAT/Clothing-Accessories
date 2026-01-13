@@ -8,14 +8,33 @@ export class MailingService {
     private transporter: nodemailer.Transporter;
 
     constructor(private configService: ConfigService) {
+        const host = this.configService.get('SMTP_HOST');
+        const port = Number(this.configService.get('SMTP_PORT', 587));
+        const user = this.configService.get('SMTP_USER');
+        const pass = this.configService.get('SMTP_PASS');
+        // Ensure secure is a boolean, as env vars are strings
+        const secure = String(this.configService.get('SMTP_SECURE', 'false')).toLowerCase() === 'true';
+
+        this.logger.log(`Initializing SMTP with ${host}:${port} (Secure: ${secure}, User: ${user})`);
+
         this.transporter = nodemailer.createTransport({
-            host: this.configService.get('SMTP_HOST'),
-            port: this.configService.get('SMTP_PORT', 587),
-            secure: this.configService.get('SMTP_SECURE', false),
-            auth: {
-                user: this.configService.get('SMTP_USER'),
-                pass: this.configService.get('SMTP_PASS'),
-            },
+            host,
+            port,
+            secure,
+            auth: { user, pass },
+            // Add timeouts to prevent hanging indefinitely
+            connectionTimeout: 10000, // 10 seconds
+            greetingTimeout: 10000,
+            socketTimeout: 15000,
+        });
+
+        // Verify connection early to catch config errors
+        this.transporter.verify((error) => {
+            if (error) {
+                this.logger.error('SMTP Connection Error during verification:', error.message);
+            } else {
+                this.logger.log('SMTP Server is ready to take messages');
+            }
         });
     }
 
@@ -59,28 +78,28 @@ export class MailingService {
         }
     }
 
-    async sendOrderConfirmation(order: any) {
-        const recipients = [order.customerEmail, 'sifat.sai3@gmail.com'];
-        const subject = `Order Confirmed #${order.id} - Petal & Pearl`;
+    // async sendOrderConfirmation(order: any) {
+    //     const recipients = [order.customerEmail, 'sifat.sai3@gmail.com'];
+    //     const subject = `Order Confirmed #${order.id} - Petal & Pearl`;
 
-        const fromEmail = this.configService.get('SMTP_FROM') ||
-            `"Petal & Pearl" <${this.configService.get('SMTP_USER')}>`;
+    //     const fromEmail = this.configService.get('SMTP_FROM') ||
+    //         `"Petal & Pearl" <${this.configService.get('SMTP_USER')}>`;
 
-        const html = `
-            <div style="font-family: sans-serif; color: #333;">
-                <h1>Order Confirmed!</h1>
-                <p>Hello ${order.customerName}, your order #${order.id} has been confirmed and is being processed.</p>
-                <p><strong>Tracking Number:</strong> ${order.courierConsignmentId || 'Pending'}</p>
-                <p>We will notify you once it has been shipped. Thank you for shopping with Petal & Pearl!</p>
-            </div>
-        `;
+    //     const html = `
+    //         <div style="font-family: sans-serif; color: #333;">
+    //             <h1>Order Confirmed!</h1>
+    //             <p>Hello ${order.customerName}, your order #${order.id} has been confirmed and is being processed.</p>
+    //             <p><strong>Tracking Number:</strong> ${order.courierConsignmentId || 'Pending'}</p>
+    //             <p>We will notify you once it has been shipped. Thank you for shopping with Petal & Pearl!</p>
+    //         </div>
+    //     `;
 
-        try {
-            this.logger.log(`Sending confirmation email for #${order.id} to ${order.customerEmail}...`);
-            await this.transporter.sendMail({ from: fromEmail, to: recipients.join(', '), subject, html });
-            this.logger.log(`Order confirmation email sent for order #${order.id}`);
-        } catch (error) {
-            this.logger.error(`Failed to send confirmation email for order #${order.id}: ${error.message}`);
-        }
-    }
+    //     try {
+    //         this.logger.log(`Sending confirmation email for #${order.id} to ${order.customerEmail}...`);
+    //         await this.transporter.sendMail({ from: fromEmail, to: recipients.join(', '), subject, html });
+    //         this.logger.log(`Order confirmation email sent for order #${order.id}`);
+    //     } catch (error) {
+    //         this.logger.error(`Failed to send confirmation email for order #${order.id}: ${error.message}`);
+    //     }
+    // }
 }
