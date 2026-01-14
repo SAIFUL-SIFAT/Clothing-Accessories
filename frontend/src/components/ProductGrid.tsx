@@ -9,6 +9,7 @@ interface ProductGridProps {
   type?: 'clothing' | 'ornament';
   onAddToCart: (product: Product) => void;
   showViewAll?: boolean;
+  transparent?: boolean;
 }
 
 const ProductGrid = ({
@@ -17,12 +18,16 @@ const ProductGrid = ({
   products,
   type = 'clothing',
   onAddToCart,
-  showViewAll = true
+  showViewAll = true,
+  transparent = false
 }: ProductGridProps) => {
+  const backgroundClass = transparent ? '' : (type === 'ornament' ? 'bg-secondary' : 'bg-background');
+  const paddingClass = transparent ? '' : 'py-20';
+
   return (
     <section
       id={type === 'clothing' ? 'collections' : 'ornaments'}
-      className={`py-20 ${type === 'ornament' ? 'bg-secondary' : 'bg-background'}`}
+      className={`${paddingClass} ${backgroundClass}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

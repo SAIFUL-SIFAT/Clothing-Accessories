@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, SlidersHorizontal, Trash2, X, ArrowLeft } from 'lucide-react';
+import { Filter, SlidersHorizontal, Trash2, X, ArrowLeft, ChevronDown } from 'lucide-react';
 import ProductGrid from '@/components/ProductGrid';
 import PageLayout from '@/components/PageLayout';
 import FilterSidebar from '@/components/FilterSidebar';
@@ -12,6 +12,8 @@ const Ornaments = () => {
     const { addToCart } = useCart();
     const [products, setProducts] = useState([]);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
+    const categoryMenuRef = useRef<HTMLDivElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [filterMetadata, setFilterMetadata] = useState({
         materials: [],
@@ -30,6 +32,16 @@ const Ornaments = () => {
         sortBy: 'date',
         sortOrder: 'DESC' as 'ASC' | 'DESC'
     });
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (categoryMenuRef.current && !categoryMenuRef.current.contains(event.target as Node)) {
+                setIsCategoryMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const fetchMetadata = async () => {
@@ -89,44 +101,78 @@ const Ornaments = () => {
 
     return (
         <PageLayout showFooter={false}>
-            <div className="pt-32 pb-20 bg-secondary/30 min-h-screen">
+            <div className="pt-32 pb-20 min-h-screen">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Return to Home Link */}
                     <Link to="/">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="inline-flex items-center gap-2 mb-8 px-4 py-3 bg-[#1a3a2e] text-[#a8c5b8] hover:bg-[#234438] transition-colors rounded-lg cursor-pointer"
-                        >
+                        <div className="inline-flex items-center gap-2 mb-8 px-4 py-3 bg-[#1a3a2e] text-[#a8c5b8] hover:bg-[#234438] transition-colors rounded-lg cursor-pointer">
                             <ArrowLeft size={18} />
                             <span className="text-sm font-medium">Return to Home</span>
-                        </motion.div>
+                        </div>
                     </Link>
 
                     {/* Header Section */}
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="max-w-2xl"
-                        >
+                        <div>
                             <h1 className="font-serif text-5xl md:text-6xl text-foreground mb-4 leading-tight">
                                 Timeless <span className="text-gold italic">Ornaments</span>
                             </h1>
                             <p className="text-muted-foreground text-lg">
-                                Discover our exquisite range of  jewelry.
+                                Discover our exquisite range of jewelry.
                             </p>
-                        </motion.div>
+                        </div>
 
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="flex items-center gap-3"
-                        >
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            {/* Category Dropdown Filter */}
+                            <div className="relative" ref={categoryMenuRef}>
+                                <button
+                                    onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
+                                    className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gold/30 text-gold hover:border-gold bg-[#14120a] transition-all duration-300 group"
+                                >
+                                    <Filter size={16} className="group-hover:scale-110 transition-transform" />
+                                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                                        {activeFilters.category || 'All'}
+                                    </span>
+                                    <ChevronDown
+                                        size={16}
+                                        className={`transition-transform duration-300 ${isCategoryMenuOpen ? 'rotate-180' : ''}`}
+                                    />
+                                </button>
+
+                                <AnimatePresence>
+                                    {isCategoryMenuOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            className="absolute right-0 mt-2 w-48 rounded-xl shadow-2xl border border-gold/20 bg-[#1c190e] backdrop-blur-md z-50 overflow-hidden"
+                                        >
+                                            <div className="py-1">
+                                                {['All', 'Ring', 'Hair clips', 'Hair bands', 'Jewellery set'].map((cat) => (
+                                                    <button
+                                                        key={cat}
+                                                        onClick={() => {
+                                                            handleFilterChange('category', cat === 'All' ? null : cat);
+                                                            setIsCategoryMenuOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${(cat === 'All' && !activeFilters.category) || activeFilters.category === cat
+                                                            ? 'bg-gold text-primary'
+                                                            : 'text-cream hover:bg-gold/10'
+                                                            }`}
+                                                    >
+                                                        {cat}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
                             {activeFilterCount > 0 && (
                                 <button
                                     onClick={resetFilters}
-                                    className="p-3 text-muted-foreground hover:text-destructive transition-colors border border-border rounded-xl"
+                                    className="p-2 sm:p-3 text-muted-foreground hover:text-destructive transition-colors border border-border rounded-xl"
                                     title="Reset Filters"
                                 >
                                     <Trash2 size={20} />
@@ -134,14 +180,14 @@ const Ornaments = () => {
                             )}
                             <button
                                 onClick={() => setIsFilterOpen(true)}
-                                className="flex items-center gap-3 bg-card border border-gold/20 px-6 py-3 rounded-xl hover:bg-muted transition-all group"
+                                className="flex items-center gap-3 bg-[#14120a] border border-gold/20 px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-muted transition-all group"
                             >
                                 <div className="relative">
                                     <SlidersHorizontal size={20} className="text-gold" />
                                 </div>
-                                <span className="text-sm font-bold uppercase tracking-widest text-gold text-shadow-sm">Filters</span>
+                                <span className="hidden sm:inline text-sm font-bold uppercase tracking-widest text-gold text-shadow-sm">Filters</span>
                             </button>
-                        </motion.div>
+                        </div>
                     </div>
 
                     {/* Active Filter Chips */}
@@ -156,7 +202,6 @@ const Ornaments = () => {
                                 {Object.entries(activeFilters).map(([key, value]) => {
                                     if (!value) return null;
 
-                                    // Skip default sorting for chips
                                     if (key === 'sortBy' && value === 'date' && activeFilters.sortOrder === 'DESC') return null;
                                     if (key === 'sortOrder') return null;
 
@@ -202,30 +247,46 @@ const Ornaments = () => {
                         )}
                     </AnimatePresence>
 
-                    {isLoading ? (
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
-                            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                                <div key={i} className="aspect-square bg-muted animate-pulse rounded-2xl" />
-                            ))}
+                    {/* Premium Card Background Container */}
+                    <div className="bg-card/30 backdrop-blur-md border border-accent/20 rounded-[40px] p-8 md:p-16 overflow-hidden relative shadow-2xl">
+                        {/* Decorative Background Elements */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px]"></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px]"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] rotate-[-25deg]">
+                            <svg width="600" height="600" viewBox="0 0 100 100">
+                                <path d="M50 5 L95 50 L50 95 L5 50 Z" fill="currentColor"></path>
+                            </svg>
                         </div>
-                    ) : products.length > 0 ? (
-                        <ProductGrid
-                            title=""
-                            products={products}
-                            type="ornament"
-                            onAddToCart={addToCart}
-                            showViewAll={false}
-                        />
-                    ) : (
-                        <div className="text-center py-20 border-2 border-dashed border-gold/20 rounded-3xl">
-                            <Filter size={48} className="mx-auto text-gold mb-4 opacity-20" />
-                            <h3 className="text-2xl font-serif text-cream mb-2">No ornaments found</h3>
-                            <p className="text-muted-foreground">Try adjusting your filters or search criteria.</p>
-                            <button onClick={resetFilters} className="mt-6 text-gold font-bold uppercase tracking-widest text-sm hover:underline">
-                                Clear all filters
-                            </button>
+
+                        {/* Content */}
+                        <div className="relative z-10">
+                            {isLoading ? (
+                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
+                                    {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                                        <div key={i} className="aspect-square bg-muted/20 animate-pulse rounded-2xl" />
+                                    ))}
+                                </div>
+                            ) : products.length > 0 ? (
+                                <ProductGrid
+                                    title=""
+                                    products={products}
+                                    type="ornament"
+                                    onAddToCart={addToCart}
+                                    showViewAll={false}
+                                    transparent={true}
+                                />
+                            ) : (
+                                <div className="text-center py-20 border-2 border-dashed border-gold/20 rounded-3xl">
+                                    <Filter size={48} className="mx-auto text-gold mb-4 opacity-20" />
+                                    <h3 className="text-2xl font-serif text-cream mb-2">No ornaments found</h3>
+                                    <p className="text-muted-foreground">Try adjusting your filters or search criteria.</p>
+                                    <button onClick={resetFilters} className="mt-6 text-gold font-bold uppercase tracking-widest text-sm hover:underline">
+                                        Clear all filters
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
 
